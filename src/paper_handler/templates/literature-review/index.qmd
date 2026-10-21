@@ -1,0 +1,49 @@
+---
+title: "{{title}}"
+author: A. Author
+date: "{{date}}"
+format: {{format}}
+bibliography: references.bib
+reference-section-title: References
+status: draft
+keywords: [literature review]
+abstract: |
+  Replace this stub with 120-250 words: the question, the scope of the review,
+  the themes you found and the gap the review identifies.
+---
+
+## Introduction
+
+State the review question and why it matters. Define the scope: which years,
+venues and kinds of study are included.
+
+## Background
+
+Give the reader the minimum context needed to follow the themes. Cite the
+foundational works here, not every paper in the matrix.
+
+## Themes
+
+### Theme one
+
+Make one comparative claim about this group of papers. Cite the works that
+support it and name the disagreement where there is one.
+
+### Theme two
+
+Repeat for the second theme. Prefer synthesis over a sequence of paper
+summaries.
+
+## Synthesis
+
+Bring the themes together. What does the body of work agree on, and where does
+the evidence conflict?
+
+## Gaps
+
+State the gap precisely enough that a study could address it. Distinguish
+"nobody has looked" from "the available studies are too weak to decide".
+
+## Conclusion
+
+Restate the review's contribution in two or three sentences.

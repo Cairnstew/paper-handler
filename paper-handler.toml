@@ -1,0 +1,5 @@
+# This repository is itself a paper corpus, so `paper-handler` run anywhere
+# inside it finds `papers/` without extra flags.  Delete this file if you only
+# want the tooling and no example corpus.
+engine = "typst"
+papers_dir = "papers"

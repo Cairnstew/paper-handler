@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-21T15:39:54.004130Z",
+  "count": 2,
+  "meta": {
+    "source": "tests/fixtures/research-handoff-source",
+    "labels": [
+      "core",
+      "general"
+    ],
+    "generated_by": "researcher-python 0.1.0"
+  },
+  "papers": [
+    {
+      "sources": [],
+      "ids": {},
+      "doi": "10.5555/attention.2020",
+      "arxiv_id": "",
+      "pmid": "",
+      "pmcid": "",
+      "isbn": "",
+      "url": "",
+      "pdf_url": "",
+      "title": "Attention and Reproducible Writing",
+      "abstract": "",
+      "published": "",
+      "venue": "Journal of Reproducible Research",
+      "volume": "",
+      "issue": "",
+      "pages": "",
+      "publisher": "",
+      "language": "",
+      "work_type": "journal-article",
+      "citation_count_source": "",
+      "oa_status": "",
+      "license": "",
+      "label": "core",
+      "exclusion_reason": "",
+      "notes": "Theme: reproducible source.",
+      "authors": [
+        {
+          "name": "Smith, Ann",
+          "author_id": "",
+          "orcid": "",
+          "affiliations": [],
+          "organization": false
+        }
+      ],
+      "year": 2020,
+      "categories": [],
+      "keywords": [],
+      "citation_count": null,
+      "reference_count": null,
+      "is_open_access": false,
+      "relevance": null,
+      "versions": []
+    },
+    {
+      "sources": [],
+      "ids": {},
+      "doi": "10.5555/tooling.2021",
+      "arxiv_id": "",
+      "pmid": "",
+      "pmcid": "",
+      "isbn": "",
+      "url": "",
+      "pdf_url": "",
+      "title": "Tooling for Scholarly Manuscripts",
+      "abstract": "",
+      "published": "",
+      "venue": "Proceedings of Reproducible Systems",
+      "volume": "",
+      "issue": "",
+      "pages": "",
+      "publisher": "",
+      "language": "",
+      "work_type": "proceedings-article",
+      "citation_count_source": "",
+      "oa_status": "",
+      "license": "",
+      "label": "general",
+      "exclusion_reason": "",
+      "notes": "Theme: pinned toolchains.",
+      "authors": [
+        {
+          "name": "Jones, Bo",
+          "author_id": "",
+          "orcid": "",
+          "affiliations": [],
+          "organization": false
+        }
+      ],
+      "year": 2021,
+      "categories": [],
+      "keywords": [],
+      "citation_count": null,
+      "reference_count": null,
+      "is_open_access": false,
+      "relevance": null,
+      "versions": []
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+---
+title: "{{title}}"
+author: A. Author
+date: "{{date}}"
+documentclass: article
+classoption: [11pt]
+format: {{format}}
+bibliography: references.bib
+reference-section-title: References
+status: draft
+keywords: [example]
+abstract: |
+  One paragraph stating the problem, the approach and the headline result.
+  Replace this stub.
+---
+
+## Introduction
+
+Open with the motivation and the claim. Cite prior work with a bracketed
+citation such as [@doe2024], or run one inline with `@doe2024` inside a
+sentence.
+
+## Method
+
+Inline and display maths both work:
+
+$$
+\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i
+$$
+
+## Results
+
+| Condition | Accuracy | Latency (ms) |
+|----------:|---------:|-------------:|
+| Baseline  |   0.81   |         112  |
+| Ours      |   0.87   |          94  |
+
+: Summary of the headline result.
+
+## Discussion
+
+Interpret the table, state the limitations honestly, and point at the next
+experiment.
+
+## Conclusion
+
+Restate the contribution in one or two sentences.

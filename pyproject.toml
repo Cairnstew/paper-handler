@@ -1,0 +1,56 @@
+[build-system]
+# `editables` is required by hatchling's PEP 660 editable hook.  uv hides this
+# in its own build environment, but pyproject.nix builds the editable wheel
+# from exactly this list, so the default dev shell fails without it.
+requires = ["hatchling>=1.25", "editables>=0.5"]
+build-backend = "hatchling.build"
+
+[project]
+name = "paper-handler"
+version = "0.1.0"
+description = "Scaffold, render and manage academic papers with Quarto + Typst/LaTeX, as a CLI and MCP server."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = [
+    "click>=8.1",
+    "pyyaml>=6.0",
+    "tomli-w>=1.0",
+]
+
+[project.optional-dependencies]
+# Inspect rendered output. Optional: nothing else in the CLI needs it.
+pdf = [
+    "pypdf>=5",
+]
+
+[project.scripts]
+paper-handler = "paper_handler.cli:main"
+paper-handler-mcp = "paper_handler.mcp.server:main"
+
+[dependency-groups]
+dev = [
+    # hatchling's PEP 660 editable hook imports `editables` without declaring
+    # it.  uv's isolated builds paper over that; pyproject.nix does not, so the
+    # editable dev shell needs it locked.  Dev-only: it never ships.
+    "editables>=0.5",
+    "pytest>=8",
+    "ruff>=0.8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/paper_handler"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# src layout: the package lives in src/, and the tests must exercise the
+# checkout rather than an installed wheel.
+pythonpath = ["src"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-21T15:39:54.003845Z",
+  "entries": [
+    {
+      "id": "10.5555/attention.2020",
+      "title": "Attention and Reproducible Writing",
+      "key": "smith2020attention",
+      "year": 2020,
+      "label": "core"
+    },
+    {
+      "id": "10.5555/tooling.2021",
+      "title": "Tooling for Scholarly Manuscripts",
+      "key": "jones2021tooling",
+      "year": 2021,
+      "label": "general"
+    }
+  ],
+  "by_id": {
+    "10.5555/attention.2020": "smith2020attention",
+    "10.5555/tooling.2021": "jones2021tooling"
+  },
+  "by_title": {
+    "attention and reproducible writing": "smith2020attention",
+    "tooling for scholarly manuscripts": "jones2021tooling"
+  }
+}

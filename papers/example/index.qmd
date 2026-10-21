@@ -1,0 +1,84 @@
+---
+title: "A Reproducible Paper Example"
+author: A. Author
+date: "2026-10-21"
+format: typst
+bibliography: references.bib
+reference-section-title: References
+status: draft
+keywords: [reproducibility, quarto, typst]
+abstract: |
+  This example paper demonstrates the paper-handler workflow. It shows how a
+  short academic document can be scaffolded, written section by section, checked
+  for structural problems, and rendered to PDF with a pinned toolchain. The
+  example is intentionally small, but it exercises the same path as a real
+  manuscript: front matter, citations, equations, tables and a bibliography. We
+  argue that reproducible paper tooling should treat the manuscript as source
+  code and the PDF as a build artifact. A reader can clone the corpus, run one
+  command, and obtain the same document. The same discipline that makes code
+  reproducible also makes a manuscript easier to review, because every claim and
+  every reference is visible in the repository.
+---
+
+## Introduction
+
+A paper is easier to trust when its source is available and its build is
+repeatable. That principle motivates treating the manuscript as a small software
+project rather than a binary attachment [@doe2024]. The PDF becomes an output,
+while the text, citations and data remain reviewable inputs.
+
+This example exercises that idea on a deliberately small document. It is also
+the regression fixture for the repository: the render check builds it with the
+same pinned toolchain that a reader would use.
+
+## Related Work
+
+Earlier work on reproducible writing emphasises plain-text sources and automated
+builds [@roe2021]. This example follows that advice and adds a narrow constraint:
+the toolchain itself is pinned, so a missing font or a newer TeX distribution
+cannot silently change the output.
+
+## Method
+
+Each paper is a directory with one entry document, a bibliography and any
+figures or data it needs. A small command renders the entry document from inside
+that directory, so relative paths resolve the way an author expects.
+
+The workflow keeps a short feedback loop:
+
+$$
+\text{write} \rightarrow \text{lint} \rightarrow \text{render}.
+$$
+
+The lint step checks structure and prose before the slower render step runs. It
+reports placeholders, heading jumps, undefined citations and overlong sentences.
+
+## Results
+
+The example renders without network access once the toolchain is present. Table
+1 summarises the three steps.
+
+| Step | Input | Output |
+|------|-------|--------|
+| Write | `index.qmd` | edited source |
+| Lint | source + `references.bib` | diagnostics |
+| Render | source | `index.pdf` |
+
+: The three-step writing loop.
+
+## Discussion
+
+Pinning the toolchain removes one common source of irreproducibility, but it
+does not remove every source. Data files can still change, and a citation can
+still point at the wrong paper. The workflow makes those problems visible rather
+than invisible, which is the practical benefit.
+
+A second benefit is reviewability. A diff shows exactly which sentences and
+citations changed, so a co-author can review the argument rather than a rebuilt
+PDF.
+
+## Conclusion
+
+This example shows that a small amount of build infrastructure can make an
+academic manuscript reproducible. The same approach scales to a journal
+template: the source stays plain text, and the toolchain stays pinned.

@@ -1,0 +1,44 @@
+---
+title: "{{title}}"
+author: A. Author
+date: "{{date}}"
+format: {{format}}
+bibliography: references.bib
+reference-section-title: References
+status: draft
+keywords: [research]
+abstract: |
+  Replace this stub with 120-250 words: the problem, the approach, the
+  headline result and its implication.
+---
+
+## Introduction
+
+State the problem and the claim. Cite the evidence that motivates it.
+
+## Related Work
+
+Group the imported literature by theme, not by paper. Each paragraph should
+make one comparative point and cite the works that support it.
+
+## Method
+
+Describe what was done, with enough detail to reproduce it.
+
+## Results
+
+Report the measure, the baseline and the effect. Every table and figure needs
+a caption that states its takeaway.
+
+## Discussion
+
+Interpret the result, state the limitations honestly, and say what would
+change your mind.
+
+## Limitations
+
+List the threats to validity that a careful reader would raise.
+
+## Conclusion
+
+Restate the contribution in one or two sentences.

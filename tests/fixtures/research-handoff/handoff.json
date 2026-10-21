@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-21T15:39:54.003845Z",
+  "source": "tests/fixtures/research-handoff-source",
+  "source_kind": "workspace",
+  "topic": "Reproducible paper tooling",
+  "round": 1,
+  "labels": [
+    "core",
+    "general"
+  ],
+  "counts": {
+    "unreviewed": 0,
+    "core": 1,
+    "general": 1,
+    "excluded": 1,
+    "records": 3,
+    "included": 2
+  },
+  "screening": {
+    "ready": true,
+    "message": ""
+  },
+  "files": {
+    "papers": "papers.json",
+    "bibliography": "references.bib",
+    "citation_map": "citation-map.json",
+    "matrix": "matrix.md",
+    "synthesis": "synthesis.md",
+    "prisma": "prisma.md",
+    "readme": "README.md"
+  },
+  "tool": {
+    "name": "researcher-python",
+    "version": "0.1.0"
+  }
+}
