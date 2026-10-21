@@ -38,9 +38,9 @@ def paper_list(_args: dict[str, Any]) -> dict[str, Any]:
                 "status": item.status,
                 "engine": item.engine,
                 "rendered": item.rendered,
-                "words": documents.word_count(
+                "words": documents.word_components(
                     item.entry.read_text(encoding="utf-8", errors="replace")
-                ),
+                )["body"],
             }
             for item in papers
         ],
@@ -111,7 +111,15 @@ def paper_init(args: dict[str, Any]) -> dict[str, Any]:
         )
     except (CorpusExistsError, OSError) as exc:
         raise ToolError(str(exc)) from exc
-    return {"ok": True, **created, "next": "Call paper_new."}
+    # Make the corpus just created the session corpus: without this, the next
+    # tool falls back to cwd-relative discovery and writes into the wrong tree.
+    current = open_corpus(created["papers_dir"])
+    return {
+        "ok": True,
+        **created,
+        "corpus": str(current.corpus),
+        "next": "Call paper_new.",
+    }
 
 
 @tool(
@@ -131,16 +139,19 @@ def paper_templates(_args: dict[str, Any]) -> dict[str, Any]:
 
 @tool(
     "paper_doctor",
-    "Report which render tools (quarto, typst, pdflatex, ...) are available.",
+    "Probe the render tools and render a minimal document; ok means a render "
+    "actually succeeded, not just that quarto exists.",
     schema(),
 )
 def paper_doctor(_args: dict[str, Any]) -> dict[str, Any]:
-    probes = toolchain.probe()
+    report = toolchain.doctor_report()
+    probes = [toolchain.Probe(**item) for item in report["probes"]]
     return {
-        "ok": any(item.name == "quarto" and item.found for item in probes),
+        "ok": report["ok"],
         "present": [item.name for item in probes if item.found],
         "missing": [item.name for item in probes if not item.found],
         "versions": {item.name: item.detail for item in probes if item.found},
+        "render": report["render"],
     }
 
 

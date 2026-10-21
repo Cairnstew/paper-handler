@@ -364,3 +364,13 @@ def test_stdio_subprocess_is_clean(make_paper, corpus: Path) -> None:
     listed = json.loads(replies[1]["result"]["content"][0]["text"])
     assert listed["papers"][0]["name"] == "alpha"
     assert completed.stderr == ""
+
+
+def test_paper_init_pins_the_new_corpus(tmp_path: Path) -> None:
+    target = tmp_path / "new-corpus"
+    started = payload(call("paper_init", {"directory": str(target)}))
+    assert started["corpus"] == str(target / "papers")
+
+    created = payload(call("paper_new", {"name": "alpha", "title": "Alpha"}))
+    assert created["ok"] is True
+    assert (target / "papers" / "alpha" / "index.qmd").is_file()

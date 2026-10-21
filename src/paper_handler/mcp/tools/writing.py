@@ -15,6 +15,7 @@ from paper_handler import research as research_mod
 from paper_handler.mcp.context import (
     ToolError,
     bib_paths,
+    bool_arg,
     compact,
     int_arg,
     paper_or_single,
@@ -68,7 +69,10 @@ def paper_context(args: dict[str, Any]) -> dict[str, Any]:
         "title": pack["title"],
         "status": pack["status"],
         "engine": item.engine,
-        "words": pack["words"],
+        "words": pack["words_body"],
+        "words_body": pack["words_body"],
+        "words_references": pack["words_references"],
+        "words_appendix": pack["words_appendix"],
         "abstract_words": pack["abstract_words"],
         "sections": pack["sections"],
         "missing": pack["missing"],
@@ -172,6 +176,15 @@ def paper_read_section(args: dict[str, Any]) -> dict[str, Any]:
             },
             "level": {"type": "integer", "default": 2},
             "after": {"type": "string", "description": "for insert: existing section to follow"},
+            "before": {
+                "type": "string",
+                "description": "for insert: existing section to precede; empty = start",
+            },
+            "create": {
+                "type": "boolean",
+                "default": False,
+                "description": "replace: create the heading when it is absent",
+            },
         },
         ["heading", "content"],
     ),
@@ -191,7 +204,10 @@ def paper_write_section(args: dict[str, Any]) -> dict[str, Any]:
             content,
             mode=mode,
             level=int_arg(args, "level"),
-            after=str_arg(args, "after") or None,
+            # Presence matters: an explicit "" means "at the start of the body".
+            after=str_arg(args, "after") if "after" in args else None,
+            before=str_arg(args, "before") if "before" in args else None,
+            create=bool_arg(args, "create"),
         )
     except documents.DocumentError as exc:
         raise ToolError(str(exc)) from exc

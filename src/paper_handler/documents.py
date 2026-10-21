@@ -133,6 +133,49 @@ def word_count(text: str) -> int:
     return len(re.findall(r"\b[\w'-]+\b", strip_code(text)))
 
 
+#: Headings whose body is not part of the assessable word count.
+_REFERENCES_HEADING = re.compile(r"^(references|bibliography|works cited)$", re.I)
+_APPENDIX_HEADING = re.compile(r"^(appendix|appendices)\b", re.I)
+
+
+def _prose_words(text: str) -> int:
+    """Words excluding heading lines, for assessable-word totals."""
+    return word_count(re.sub(r"^#{1,6}.*$", " ", text, flags=re.M))
+
+
+def word_components(text: str) -> dict[str, int | None]:
+    """Body, references and appendix word counts, kept separate.
+
+    A word limit applies to the assessable body, not to the reference list or
+    an appendix.  The legacy single ``words`` number counted everything after
+    the front matter, which read as over-limit on a paper that was not.
+    """
+    body_start = _body_offset(text)
+    sections = parse_sections(text)
+    references_at = next(
+        (s.start for s in sections if _REFERENCES_HEADING.match(s.heading)), None
+    )
+    appendix_at = next(
+        (s.start for s in sections if _APPENDIX_HEADING.match(s.heading)), None
+    )
+    body_end = min(
+        pos for pos in (references_at, appendix_at, len(text)) if pos is not None
+    )
+    references = 0
+    if references_at is not None:
+        end = appendix_at if appendix_at is not None and appendix_at > references_at else len(text)
+        references = _prose_words(text[references_at:end])
+    appendix = _prose_words(text[appendix_at:]) if appendix_at is not None else 0
+    meta = frontmatter.parse(text) if body_start else {}
+    abstract = meta.get("abstract")
+    return {
+        "body": _prose_words(text[body_start:body_end]),
+        "references": references,
+        "appendix": appendix,
+        "abstract": word_count(abstract) if isinstance(abstract, str) else None,
+    }
+
+
 def strip_code(text: str) -> str:
     """Remove fenced code blocks, inline code and image/link tags."""
     text = CODE_BLOCK_RE.sub(" ", text)
@@ -163,20 +206,18 @@ def outline(text: str) -> dict[str, Any]:
         for section in sections
     ]
     headings = {_norm(item["heading"]) for item in items}
+    words = word_components(text)
     return {
         "title": meta.get("title"),
         "status": meta.get("status", "draft"),
-        "abstract_words": _abstract_words(meta.get("abstract")),
-        "words": word_count(text[_body_offset(text) :]),
+        "abstract_words": words["abstract"],
+        "words": words["body"],
+        "words_body": words["body"],
+        "words_references": words["references"],
+        "words_appendix": words["appendix"],
         "sections": items,
         "missing": [name for name in REQUIRED_SECTIONS if name not in headings],
     }
-
-
-def _abstract_words(abstract: Any) -> int | None:
-    if not isinstance(abstract, str):
-        return None
-    return word_count(abstract)
 
 
 # ── editing ────────────────────────────────────────────────────────────────
@@ -215,15 +256,28 @@ def insert_section(
     *,
     level: int = 2,
     after: str | None = None,
+    before: str | None = None,
 ) -> str:
-    """Insert a new section, after *after* when given, otherwise at the end."""
+    """Insert a new section, after/before an anchor, otherwise at the end.
+
+    ``after=""`` or ``before=""`` inserts at the start of the body (after the
+    front matter), which is how front matter such as a declaration is placed
+    ahead of the first existing section.  Passing both anchors is an error.
+    """
+    if after is not None and before is not None:
+        raise DocumentError("pass either after or before, not both")
     if any(_norm(s.heading) == _norm(heading) for s in parse_sections(text)):
         raise DocumentError(f"section {heading!r} already exists")
 
     block = f"{'#' * level} {heading}\n\n{body.strip()}\n"
     if after is not None:
-        anchor = find_section(parse_sections(text), after)
-        position = anchor.end
+        position = _body_offset(text) if after == "" else find_section(
+            parse_sections(text), after
+        ).end
+    elif before is not None:
+        position = _body_offset(text) if before == "" else find_section(
+            parse_sections(text), before
+        ).start
     else:
         position = len(text)
 
@@ -244,25 +298,55 @@ def edit_file(
     mode: str = "replace",
     level: int | None = None,
     after: str | None = None,
+    before: str | None = None,
+    create: bool = False,
 ) -> dict[str, Any]:
-    """Apply one section edit to *path* and return a compact receipt."""
+    """Apply one section edit to *path* and return a compact receipt.
+
+    ``create=True`` lets ``mode="replace"`` create the section when it does not
+    exist, instead of failing with an error indistinguishable from a typo.
+    """
     if mode not in ("replace", "append", "insert"):
         raise DocumentError("mode must be replace, append or insert")
     text = Path(path).read_text(encoding="utf-8")
+    actual_mode = mode
     if mode == "replace":
-        updated = replace_section(text, heading, content, level)
+        try:
+            updated = replace_section(text, heading, content, level)
+        except DocumentError:
+            if not create:
+                raise
+            updated = insert_section(
+                text,
+                heading,
+                content,
+                level=level or 2,
+                after=after,
+                before=before,
+            )
+            actual_mode = "insert"
     elif mode == "append":
         updated = append_section(text, heading, content, level)
     else:
         updated = insert_section(
-            text, heading, content, level=level or 2, after=after
+            text,
+            heading,
+            content,
+            level=level or 2,
+            after=after,
+            before=before,
         )
     Path(path).write_text(updated, encoding="utf-8")
+    words = word_components(updated)
     return {
-        "mode": mode,
+        "mode": actual_mode,
         "heading": heading,
         "words_added": word_count(content),
-        "words": word_count(updated[_body_offset(updated) :]),
+        "words": words["body"],
+        "words_body": words["body"],
+        "words_references": words["references"],
+        "words_appendix": words["appendix"],
+        "abstract_words": words["abstract"],
         "sections": outline(updated)["sections"],
     }
 
@@ -526,10 +610,16 @@ def lint(
 
     errors = sum(1 for issue in issues if issue["severity"] == "error")
     warnings = sum(1 for issue in issues if issue["severity"] == "warning")
+    words = word_components(text)
     return {
         "ok": errors == 0,
         "errors": errors,
         "warnings": warnings,
         "issues": issues,
         "readability": report,
+        "words": words["body"],
+        "words_body": words["body"],
+        "words_references": words["references"],
+        "words_appendix": words["appendix"],
+        "abstract_words": words["abstract"],
     }

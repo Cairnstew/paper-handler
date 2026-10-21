@@ -237,3 +237,50 @@ def test_unused_bibliography_is_only_info(tmp_path: Path) -> None:
     report = documents.lint("# Introduction\n\nNo citations.\n\n# Conclusion\n\nDone.\n", bib)
     assert any(issue["code"] == "unused-citation" for issue in report["issues"])
     assert report["ok"] is True
+
+
+def test_insert_section_can_go_before_the_first_section() -> None:
+    text = "---\ntitle: T\n---\n\n## Introduction\n\nBody.\n"
+    updated = documents.insert_section(
+        text, "Declaration", "Original work.", level=2, before="Introduction"
+    )
+    assert updated.index("## Declaration") < updated.index("## Introduction")
+    assert updated.index("title: T") < updated.index("## Declaration")
+
+
+def test_insert_section_accepts_an_empty_anchor_for_the_start() -> None:
+    text = "---\ntitle: T\n---\n\n## Introduction\n\nBody.\n"
+    updated = documents.insert_section(
+        text, "Declaration", "Original work.", level=2, after=""
+    )
+    assert updated.index("## Declaration") < updated.index("## Introduction")
+
+
+def test_replace_section_can_create_a_missing_heading(tmp_path: Path) -> None:
+    path = tmp_path / "index.qmd"
+    path.write_text("---\ntitle: T\n---\n\n## Introduction\n\nBody.\n", encoding="utf-8")
+    receipt = documents.edit_file(
+        path, "Method", "We measure.", create=True, before="Introduction"
+    )
+    assert receipt["mode"] == "insert"
+    text = path.read_text(encoding="utf-8")
+    assert text.index("## Method") < text.index("## Introduction")
+
+
+def test_word_components_exclude_references_and_appendices() -> None:
+    text = (
+        "---\ntitle: T\nabstract: Four words in here.\n---\n\n"
+        "## Introduction\n\nOne two three four five.\n\n"
+        "## References\n\nOne two three four.\n\n"
+        "## Appendix\n\nOne two.\n"
+    )
+    words = documents.word_components(text)
+    assert words["body"] == 5
+    assert words["references"] == 4
+    assert words["appendix"] == 2
+    assert words["abstract"] == 4
+
+    pack = documents.outline(text)
+    assert pack["words"] == 5
+    assert pack["words_references"] == 4
+    assert pack["words_appendix"] == 2

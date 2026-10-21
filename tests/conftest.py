@@ -21,6 +21,15 @@ _ENV_VARS = (
     config_mod.ENV_PAPERS_DIR,
     config_mod.ENV_TEMPLATES_DIR,
     config_mod.ENV_CONFIG,
+    "PAPER_HANDLER_TOOLCHAIN_DIR",
+    "PAPER_HANDLER_QUARTO",
+    "PAPER_HANDLER_PANDOC",
+    "PAPER_HANDLER_TYPST",
+    "PAPER_HANDLER_PDFLATEX",
+    "PAPER_HANDLER_LUALATEX",
+    "PAPER_HANDLER_LATEXMK",
+    "PAPER_HANDLER_JUPYTER",
+    "PAPER_HANDLER_PYTHON",
 )
 
 
@@ -38,6 +47,16 @@ def isolated_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     user_config = xdg / "paper-handler" / "config.toml"
     monkeypatch.setattr(config_mod, "_default_config_paths", lambda: [user_config])
     return xdg
+
+
+@pytest.fixture(autouse=True)
+def isolated_session():
+    """Keep the MCP session corpus from leaking between tests."""
+    from paper_handler.mcp.context import close_corpus
+
+    close_corpus()
+    yield
+    close_corpus()
 
 
 @pytest.fixture

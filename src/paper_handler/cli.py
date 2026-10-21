@@ -89,11 +89,12 @@ def cli(ctx: click.Context, config_path: Path | None) -> None:
 @click.option("--json", "as_json", is_flag=True, help="Machine-readable output.")
 def doctor(as_json: bool) -> None:
     """Report which parts of the render toolchain are available."""
+    report = toolchain.doctor_report()
     if as_json:
-        click.echo(toolchain.doctor_json())
+        click.echo(json.dumps(report, indent=2))
     else:
-        click.echo(toolchain.doctor_text())
-    if not toolchain.doctor_ok():
+        click.echo(toolchain.format_report(report))
+    if not report["ok"]:
         raise SystemExit(1)
 
 

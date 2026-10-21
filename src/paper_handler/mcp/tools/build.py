@@ -20,7 +20,7 @@ from paper_handler.mcp.context import (
 )
 from paper_handler.mcp.registry import schema, tool
 from paper_handler.render import RenderError, render_captured
-from paper_handler.toolchain import ToolchainError
+from paper_handler.toolchain import ToolchainError, render_hint
 
 
 def _tail(text: str, limit: int = 2000) -> str:
@@ -65,7 +65,11 @@ def paper_render(args: dict[str, Any]) -> dict[str, Any]:
             "bytes": item.pdf.stat().st_size if item.pdf.is_file() else 0,
         }
         if status != 0:
-            result["stderr_tail"] = _tail(stderr or stdout)
+            output = stderr or stdout
+            result["stderr_tail"] = _tail(output)
+            hint = render_hint(output)
+            if hint:
+                result["hint"] = hint
         return result
 
     papers = project.discover(current.corpus)
@@ -85,7 +89,12 @@ def paper_render(args: dict[str, Any]) -> dict[str, Any]:
         if status == 0:
             rendered.append(item.name)
         else:
-            failed.append({"paper": item.name, "stderr_tail": _tail(stderr or stdout, 800)})
+            output = stderr or stdout
+            entry: dict[str, Any] = {"paper": item.name, "stderr_tail": _tail(output, 800)}
+            hint = render_hint(output)
+            if hint:
+                entry["hint"] = hint
+            failed.append(entry)
             if not bool_arg(args, "keep_going"):
                 break
     return {

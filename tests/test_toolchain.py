@@ -82,3 +82,48 @@ def test_require_returns_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
     fake.chmod(0o755)
     monkeypatch.setenv("PATH", str(tmp_path))
     assert toolchain.require("quarto") == str(fake)
+
+
+def test_which_honours_a_per_tool_override(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fake = tmp_path / "quarto"
+    fake.write_text("#!/bin/sh\n")
+    monkeypatch.setenv("PAPER_HANDLER_QUARTO", str(fake))
+    assert toolchain.which("quarto") == str(fake)
+
+    monkeypatch.setenv("PAPER_HANDLER_QUARTO", str(tmp_path))
+    assert toolchain.which("quarto") == str(fake)
+
+
+def test_which_honours_a_toolchain_directory(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    fake = tmp_path / "typst"
+    fake.write_text("#!/bin/sh\n")
+    monkeypatch.setenv("PAPER_HANDLER_TOOLCHAIN_DIR", str(tmp_path))
+    assert toolchain.which("typst") == str(fake)
+
+
+def test_require_rejects_an_unresolvable_override(
+    monkeypatch: pytest.MonkeyPatch, no_tools: Path
+) -> None:
+    monkeypatch.setenv("PAPER_HANDLER_QUARTO", "/does/not/exist/quarto")
+    with pytest.raises(ToolchainError, match="PAPER_HANDLER_QUARTO"):
+        toolchain.require("quarto")
+
+
+def test_doctor_runs_a_smoke_render(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(toolchain, "probe", lambda: PRESENT)
+    monkeypatch.setattr(
+        toolchain, "smoke_render", lambda: {"ok": False, "detail": "Aeson exception"}
+    )
+    report = toolchain.doctor_report()
+    assert report["ok"] is False
+    assert report["render"]["ok"] is False
+    assert "Aeson exception" in report["render"]["detail"]
+
+    monkeypatch.setattr(
+        toolchain, "smoke_render", lambda: {"ok": True, "detail": "ok"}
+    )
+    assert toolchain.doctor_report()["ok"] is True

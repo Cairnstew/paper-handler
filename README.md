@@ -120,12 +120,39 @@ $ pip install .
 | `paper-handler research status TARGET` | A handoff or imported paper's counts. |
 | `paper-handler research sync TARGET --handoff DIR` | Refresh generated `research/` files without touching prose. |
 | `paper-handler research prisma TARGET` | Append the generated PRISMA flow as a Quarto include. |
-| `paper-handler doctor` | What of the toolchain is actually installed. `--json` for CI. |
+| `paper-handler doctor` | Probe the toolchain **and render a minimal document**. `--json` for CI; exit 1 if the smoke render fails. |
 | `paper-handler mcp` | Run the MCP server over stdio (same as `paper-handler-mcp`). |
 
 Every render runs with the *paper's own directory* as the working directory,
 so `bibliography: references.bib` and relative `include` paths resolve the way
 you expect no matter where you invoked the CLI from.
+
+### Toolchain overrides for a long-lived MCP server
+
+`paper_doctor`/`doctor` no longer equates "the binary exists" with "rendering
+works": they render a minimal HTML document and report `render: ok | BROKEN`.
+A long-lived server cannot change its own PATH, so the lookup honours:
+
+- `PAPER_HANDLER_QUARTO`, `PAPER_HANDLER_TYPST`, `..._PANDOC`, `..._PDFLATEX`,
+  `..._LUALATEX`, `..._LATEXMK`, `..._JUPYTER`, `..._PYTHON` — an exact binary
+  path or a directory containing it;
+- `PAPER_HANDLER_TOOLCHAIN_DIR` — a bin directory searched before PATH.
+
+An explicit override that does not resolve is an error naming the variable,
+not a silent fall-back. `paper_render` adds a `hint` when Quarto's stderr shows
+the Pandoc version-skew signature (`Aeson exception` / `Unknown option`).
+
+### Word counts
+
+`paper_context`, `paper_lint` and the write receipt report the assessable body
+separately from the rest:
+
+- `words` / `words_body` — prose between the front matter and the first
+  `References`, `Bibliography` or `Appendix` heading, headings excluded;
+- `words_references`, `words_appendix`, `abstract_words`.
+
+A 2,000-word limit therefore compares against `words_body`, not against a total
+that includes the reference list.
 
 ### Templates
 
@@ -175,14 +202,14 @@ ask for one section.
 | `paper_context` | Budgeted context pack: outline, citations, issues, style rules. |
 | `paper_outline` | Heading tree and per-section word counts. |
 | `paper_read_section` | One section, truncated to `max_tokens`. |
-| `paper_write_section` | `replace` / `append` / `insert` a section; returns a receipt, not the document. |
+| `paper_write_section` | `replace` / `append` / `insert`; `before=` or `after=""` inserts at the start, `create=true` lets `replace` create a missing heading. |
 | `paper_write_abstract` | Set the front-matter abstract. |
 | `paper_lint` | Placeholders, heading jumps, long prose, undefined citations, readability. |
 | `paper_new` / `paper_init` | Scaffold a paper or a corpus. |
 | `paper_render` | Render and get the PDF path, size and a short failure tail. |
 | `paper_meta_get` / `paper_meta_set` | Read or edit front matter. |
 | `paper_bib_check` / `paper_bib_init` | Bibliography hygiene. |
-| `paper_templates` / `paper_doctor` | Discover templates and tools. |
+| `paper_templates` / `paper_doctor` | Discover templates; doctor probes the tools and runs an HTML smoke render. |
 | `paper_open_corpus` / `paper_close_corpus` | Pin a corpus for the session (for a server launched outside one). |
 | `paper_research_import` | Scaffold a paper from a researcher-python handoff. |
 | `paper_research_context` | Compact counts, core papers and citation keys. |
